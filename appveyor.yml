@@ -1,0 +1,29 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+
+environment:
+  priv_key:
+    secure: <encryped-value>
+
+install:
+  - ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----`n"
+  - ps: $fileContent += $env:priv_key.Replace(' ', "`n")
+  - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
+  - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
+  - git submodule update --init --recursive
+
+configuration: Release
+platform: Any CPU
+
+before_build:
+  - nuget restore
+
+build:
+  project: smSlicerCoreSubmodule.sln
+  verbosity: minimal
+
+test:
+  # only assemblies to test
+  assemblies:
+    only:
+      - geometry3Sharp.Test.dll
